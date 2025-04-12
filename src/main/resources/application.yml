@@ -17,6 +17,9 @@ server:
 wallet:
   api:
     baseurl: /api/v1/wallet
+  price:
+    update:
+      interval: 60000
 
 coincap:
   base-url: https://rest.coincap.io/v3

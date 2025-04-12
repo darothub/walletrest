@@ -1,7 +1,7 @@
 package com.example.walletrest.presentation.controller;
 
 import com.example.walletrest.application.service.WalletEvaluationService;
-import com.example.walletrest.presentation.config.ApiConstants;
+import com.example.walletrest.infrastructure.config.ApiConstants;
 import com.example.walletrest.presentation.dto.WalletEvaluationRequestDto;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

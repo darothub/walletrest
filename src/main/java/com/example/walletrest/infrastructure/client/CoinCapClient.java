@@ -1,6 +1,6 @@
-package com.example.walletrest.presentation.client;
+package com.example.walletrest.infrastructure.client;
 
-import com.example.walletrest.presentation.config.CoinCapProperties;
+import com.example.walletrest.infrastructure.config.CoinCapProperties;
 import com.example.walletrest.presentation.dto.TokenResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -50,7 +50,7 @@ public class CoinCapClient {
                             BigDecimal price = new BigDecimal((String) entry.get("priceUsd")).setScale(2, RoundingMode.HALF_UP);
                             TokenResponseDto tokenResponseDto = new TokenResponseDto(name, price);
                             result.put(symbol, tokenResponseDto);
-                            log.info(symbol + " -" + tokenResponseDto);
+//                            log.info(symbol + " -" + tokenResponseDto);
                         }
                     }
                     return result;
