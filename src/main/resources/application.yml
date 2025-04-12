@@ -13,6 +13,11 @@ spring:
 server:
   port: 8080
 
+
+wallet:
+  api:
+    baseurl: /api/v1/wallet
+
 coincap:
   base-url: https://rest.coincap.io/v3
   api-key: ${COINCAP_API_KEY}

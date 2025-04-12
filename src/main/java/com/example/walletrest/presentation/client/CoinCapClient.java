@@ -1,6 +1,7 @@
 package com.example.walletrest.presentation.client;
 
 import com.example.walletrest.presentation.config.CoinCapProperties;
+import com.example.walletrest.presentation.dto.TokenResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,8 +29,8 @@ public class CoinCapClient {
                 .defaultHeader("Authorization", "Bearer " + properties.getApiKey())
                 .build();
     }
+    public Mono<Map<String, TokenResponseDto>> getTokensPrices() {
 
-    public Mono<Map<String, BigDecimal>> getTokensPrices() {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/assets")
@@ -38,39 +39,47 @@ public class CoinCapClient {
                 .bodyToMono(Map.class)
                 .map(response -> {
 
-                    Map<String, BigDecimal> result = new HashMap<>();
+                    Map<String, TokenResponseDto> result = new HashMap<>();
                     Object dataObj = response.get("data");
 
                     if (dataObj instanceof List<?> dataList) {
                         for (Object obj : dataList) {
                             Map<String, Object> entry = (Map<String, Object>) obj;
                             String symbol = ((String) entry.get("symbol")).toUpperCase();
+                            String name = ((String) entry.get("name")).toLowerCase();
                             BigDecimal price = new BigDecimal((String) entry.get("priceUsd")).setScale(2, RoundingMode.HALF_UP);
-                            result.put(symbol, price);
-                            log.info(symbol + " - $" + price);
+                            TokenResponseDto tokenResponseDto = new TokenResponseDto(name, price);
+                            result.put(symbol, tokenResponseDto);
+                            log.info(symbol + " -" + tokenResponseDto);
                         }
                     }
                     return result;
                 });
     }
-    public Mono<BigDecimal> getHistoricalPrice(String symbol, String date) {
-        Instant start = LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant end = start.plusSeconds(86399);
-
+    public Mono<BigDecimal> getHistoricalPrice(String slug, String date) {
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/assets/{symbol}/history")
-                        .queryParam("interval", "d1")
-                        .queryParam("start", start.toEpochMilli())
-                        .queryParam("end", end.toEpochMilli())
-                        .build(symbol.toLowerCase()))
+                .uri(uriBuilder -> {
+                    uriBuilder.path("/assets/{slug}/history")
+                            .queryParam("interval", "d1");
+
+                    if (date != null && !date.isBlank()) {
+                        Instant startInstant = LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC).toInstant();
+                        long start = startInstant.toEpochMilli();
+                        long end = startInstant.plusSeconds(86399).toEpochMilli();
+
+                        uriBuilder.queryParam("start", start)
+                                .queryParam("end", end);
+                    }
+
+                    return uriBuilder.build(slug.toLowerCase());
+                })
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(response -> {
                     Object dataObj = response.get("data");
 
                     if (dataObj instanceof List<?> list && !list.isEmpty()) {
-                        Map<String, Object> entry = (Map<String, Object>) list.get(0);
+                        Map<String, Object> entry = (Map<String, Object>) list.getLast();
                         String priceStr = entry.get("priceUsd").toString();
                         return new BigDecimal(priceStr);
                     }

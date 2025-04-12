@@ -1,6 +1,7 @@
 package com.example.walletrest.presentation.exception.handler;
 
 import com.example.walletrest.application.exception.InvalidAssetPriceException;
+import com.example.walletrest.application.exception.InvalidDateFormatException;
 import com.example.walletrest.application.exception.ResourceNotFoundException;
 import com.example.walletrest.application.exception.UserAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,14 @@ import java.util.Locale;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+    @ExceptionHandler(InvalidDateFormatException.class)
+    public ResponseEntity<ApiError> handleInvalidDateFormatException(InvalidDateFormatException ex) {
+        log.error(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(400, ex.getMessage()));
+    }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleUserAlreadyExist(UserAlreadyExistsException ex) {

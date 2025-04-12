@@ -13,6 +13,7 @@ import com.example.walletrest.infrastructure.repository.UserRepository;
 import com.example.walletrest.infrastructure.repository.WalletRepository;
 import com.example.walletrest.presentation.client.CoinCapClient;
 import com.example.walletrest.presentation.dto.AssetRequestDto;
+import com.example.walletrest.presentation.dto.TokenResponseDto;
 import com.example.walletrest.presentation.mapper.WalletMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,9 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Wallet addAssetToWallet(Long walletId, AssetRequestDto dto) {
         WalletEntity walletEntity = getWalletEntity(walletId);
-        Map<String, BigDecimal> tokenAndPriceMap = coinCapClient.getTokensPrices().block();
+        Map<String, TokenResponseDto> tokenAndPriceMap = coinCapClient.getTokensPrices().block();
         if(tokenAndPriceMap != null) {
-            var latestPrice = tokenAndPriceMap.get(dto.symbol().toUpperCase(Locale.ROOT));
+            var latestPrice = tokenAndPriceMap.get(dto.symbol().toUpperCase(Locale.ROOT)).price();
             if (latestPrice == null || latestPrice.compareTo(dto.price()) != 0) {
                 throw new InvalidAssetPriceException();
             }

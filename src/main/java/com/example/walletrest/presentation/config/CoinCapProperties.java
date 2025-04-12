@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "coincap")
 @Data
 public class CoinCapProperties {
-
     private String baseUrl;
     private String apiKey;
-
 }
