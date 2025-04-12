@@ -2,6 +2,7 @@ package com.example.walletrest.presentation.controller;
 
 import com.example.walletrest.application.service.WalletService;
 import com.example.walletrest.domain.model.Wallet;
+import com.example.walletrest.presentation.config.ApiConstants;
 import com.example.walletrest.presentation.dto.AssetRequestDto;
 import com.example.walletrest.presentation.dto.CreateWalletRequestDto;
 import com.example.walletrest.presentation.dto.WalletResponseDto;
@@ -12,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/wallet")
+@RequestMapping(ApiConstants.BASE_URL)
 @Validated
 public class WalletController {
 
