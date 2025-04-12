@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Data
 @Entity
 @Table(name = "assets")
-public class Asset {
+public class AssetEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +29,6 @@ public class Asset {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id")
-    private Wallet wallet;
+    private WalletEntity wallet;
 
 }

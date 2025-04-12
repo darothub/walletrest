@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,9 +22,9 @@ public class User {
     private String email;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Wallet wallet;
+    private WalletEntity walletEntity;
 
-    public User(String email) {
+    public UserEntity(String email) {
         this.email = email;
     }
 }
