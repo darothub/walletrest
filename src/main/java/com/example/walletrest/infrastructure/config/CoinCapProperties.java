@@ -1,4 +1,4 @@
-package com.example.walletrest.presentation.config;
+package com.example.walletrest.infrastructure.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

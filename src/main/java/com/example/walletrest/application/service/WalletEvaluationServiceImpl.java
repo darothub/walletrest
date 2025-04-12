@@ -1,7 +1,7 @@
 package com.example.walletrest.application.service;
 
 import com.example.walletrest.application.exception.InvalidDateFormatException;
-import com.example.walletrest.presentation.client.CoinCapClient;
+import com.example.walletrest.infrastructure.client.CoinCapClient;
 import com.example.walletrest.presentation.dto.AssetRequestDto;
 import com.example.walletrest.presentation.dto.TokenResponseDto;
 import lombok.RequiredArgsConstructor;
