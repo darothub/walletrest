@@ -8,6 +8,7 @@ import com.example.walletrest.presentation.dto.CreateWalletRequestDto;
 import com.example.walletrest.presentation.dto.WalletResponseDto;
 import com.example.walletrest.presentation.mapper.WalletMapper;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,6 @@ public class WalletController {
             @Valid @RequestBody AssetRequestDto assetRequestDto
     ) {
         Wallet wallet = walletService.addAssetToWallet(id, assetRequestDto);
-        return ResponseEntity.ok(WalletMapper.toDto(wallet));
+        return ResponseEntity.status(HttpStatus.CREATED).body(WalletMapper.toDto(wallet));
     }
 }
