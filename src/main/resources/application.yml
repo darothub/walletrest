@@ -23,4 +23,3 @@ wallet:
 
 coincap:
   base-url: https://rest.coincap.io/v3
-  api-key: ${COINCAP_API_KEY}

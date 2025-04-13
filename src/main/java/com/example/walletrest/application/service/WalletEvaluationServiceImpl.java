@@ -1,5 +1,6 @@
 package com.example.walletrest.application.service;
 
+import com.example.walletrest.application.exception.ClientResponseException;
 import com.example.walletrest.application.exception.InvalidDateFormatException;
 import com.example.walletrest.infrastructure.client.CoinCapClient;
 import com.example.walletrest.presentation.dto.AssetRequestDto;
@@ -7,6 +8,7 @@ import com.example.walletrest.presentation.dto.TokenResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,6 +34,7 @@ public class WalletEvaluationServiceImpl implements WalletEvaluationService {
         if(date != null) {
             date = resolveEvaluationDate(date).toString();
         }
+        Map<String, Object> result = new HashMap<>();
         AtomicReference<BigDecimal> totalValue = new AtomicReference<>(BigDecimal.ZERO);
         String bestAsset = null, worstAsset = null;
         BigDecimal bestPerformance = LOWEST_PERFORMANCE;
@@ -42,43 +45,46 @@ public class WalletEvaluationServiceImpl implements WalletEvaluationService {
             BigDecimal quantity = asset.quantity();
             BigDecimal originalValue = asset.value();
             BigDecimal originalUnitPrice = originalValue.divide(quantity, 3, RoundingMode.HALF_UP);
-            TokenResponseDto tokenResponseDto = Objects.requireNonNull(coinCapClient.getTokensPrices().block()).get(symbol);
-            if (tokenResponseDto == null) {
-                throw new RuntimeException("Cannot find token for symbol: " + symbol);
-            }
-            String slug = tokenResponseDto.name();
-            log.info("Slug: {}, {}", slug, date);
-            BigDecimal latestPrice = coinCapClient.getHistoricalPrice(slug, date).block();
+            try{
+                TokenResponseDto tokenResponseDto = Objects.requireNonNull(coinCapClient.getTokensPrices().block()).get(symbol);
+                if (tokenResponseDto == null) {
+                    throw new RuntimeException("Cannot find token for symbol: " + symbol);
+                }
+                String slug = tokenResponseDto.name();
+                log.info("Slug: {}, {}", slug, date);
+                BigDecimal latestPrice = coinCapClient.getHistoricalPrice(slug, date).block();
 
-            if (latestPrice == null || latestPrice.compareTo(BigDecimal.ZERO) == 0) {
-                 log.warn("Skipping {}: no price data", symbol);
-            };
+                if (latestPrice == null || latestPrice.compareTo(BigDecimal.ZERO) == 0) {
+                    log.warn("Skipping {}: no price data", symbol);
+                };
 
-            BigDecimal performance = latestPrice.subtract(originalUnitPrice)
-                    .divide(originalUnitPrice, 6, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
+                BigDecimal performance = latestPrice.subtract(originalUnitPrice)
+                        .divide(originalUnitPrice, 6, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
 
-            BigDecimal newValue = latestPrice.multiply(quantity);
-            totalValue.updateAndGet(v -> v.add(newValue));
+                BigDecimal newValue = latestPrice.multiply(quantity);
+                totalValue.updateAndGet(v -> v.add(newValue));
 
-            if (performance.compareTo(bestPerformance) > 0) {
-                bestPerformance = performance;
-                bestAsset = symbol;
-            }
+                if (performance.compareTo(bestPerformance) > 0) {
+                    bestPerformance = performance;
+                    bestAsset = symbol;
+                }
 
-            if (performance.compareTo(worstPerformance) < 0) {
-                worstPerformance = performance;
-                worstAsset = symbol;
+                if (performance.compareTo(worstPerformance) < 0) {
+                    worstPerformance = performance;
+                    worstAsset = symbol;
+                }
+
+                result.put("total", totalValue.get().setScale(2, RoundingMode.HALF_UP));
+                result.put("best_asset", bestAsset);
+                result.put("best_performance", bestPerformance.setScale(2, RoundingMode.HALF_UP));
+                result.put("worst_asset", worstAsset);
+                result.put("worst_performance", worstPerformance.setScale(2, RoundingMode.HALF_UP));
+
+            } catch (WebClientResponseException e){
+                throw new ClientResponseException("Invalid client request: " + e.getMessage());
             }
         }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", totalValue.get().setScale(2, RoundingMode.HALF_UP));
-        result.put("best_asset", bestAsset);
-        result.put("best_performance", bestPerformance.setScale(2, RoundingMode.HALF_UP));
-        result.put("worst_asset", worstAsset);
-        result.put("worst_performance", worstPerformance.setScale(2, RoundingMode.HALF_UP));
-
         return result;
     }
 

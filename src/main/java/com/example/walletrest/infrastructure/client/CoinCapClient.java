@@ -30,31 +30,35 @@ public class CoinCapClient {
                 .build();
     }
     public Mono<Map<String, TokenResponseDto>> getTokensPrices() {
+        try{
+            return webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/assets")
+                            .build())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .map(response -> {
 
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/assets")
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> {
+                        Map<String, TokenResponseDto> result = new HashMap<>();
+                        Object dataObj = response.get("data");
 
-                    Map<String, TokenResponseDto> result = new HashMap<>();
-                    Object dataObj = response.get("data");
-
-                    if (dataObj instanceof List<?> dataList) {
-                        for (Object obj : dataList) {
-                            Map<String, Object> entry = (Map<String, Object>) obj;
-                            String symbol = ((String) entry.get("symbol")).toUpperCase();
-                            String name = ((String) entry.get("name")).toLowerCase();
-                            BigDecimal price = new BigDecimal((String) entry.get("priceUsd")).setScale(2, RoundingMode.HALF_UP);
-                            TokenResponseDto tokenResponseDto = new TokenResponseDto(name, price);
-                            result.put(symbol, tokenResponseDto);
-//                            log.info(symbol + " -" + tokenResponseDto);
+                        if (dataObj instanceof List<?> dataList) {
+                            for (Object obj : dataList) {
+                                Map<String, Object> entry = (Map<String, Object>) obj;
+                                String symbol = ((String) entry.get("symbol")).toUpperCase();
+                                String name = ((String) entry.get("name")).toLowerCase();
+                                BigDecimal price = new BigDecimal((String) entry.get("priceUsd")).setScale(2, RoundingMode.HALF_UP);
+                                TokenResponseDto tokenResponseDto = new TokenResponseDto(name, price);
+                                result.put(symbol, tokenResponseDto);
+//
+                            }
                         }
-                    }
-                    return result;
-                });
+                        return result;
+                    });
+        } catch (Exception e){
+            log.error(e.getMessage(), e);
+            return Mono.error(e);
+        }
     }
     public Mono<BigDecimal> getHistoricalPrice(String slug, String date) {
         return webClient.get()

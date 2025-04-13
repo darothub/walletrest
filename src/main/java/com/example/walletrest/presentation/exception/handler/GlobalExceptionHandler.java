@@ -1,15 +1,13 @@
 package com.example.walletrest.presentation.exception.handler;
 
-import com.example.walletrest.application.exception.InvalidAssetPriceException;
-import com.example.walletrest.application.exception.InvalidDateFormatException;
-import com.example.walletrest.application.exception.ResourceNotFoundException;
-import com.example.walletrest.application.exception.UserAlreadyExistsException;
+import com.example.walletrest.application.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Locale;
 
@@ -17,6 +15,24 @@ import java.util.Locale;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ClientResponseException.class)
+    public ResponseEntity<ApiError> handleClientResponseException(ClientResponseException ex) {
+        log.error(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(400, ex.getMessage()));
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.error(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(400, ex.getMessage()));
+    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiError> handleRuntimeException(RuntimeException ex) {
+        log.error(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiError.of(500, ex.getMessage()));
+    }
 
     @ExceptionHandler(InvalidDateFormatException.class)
     public ResponseEntity<ApiError> handleInvalidDateFormatException(InvalidDateFormatException ex) {
