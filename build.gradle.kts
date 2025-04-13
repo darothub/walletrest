@@ -36,5 +36,24 @@ dependencies {
 }
 
 tasks.withType<Test> {
+    jvmArgs(
+        "-javaagent:${configurations.testRuntimeClasspath.get().files.find { it.name.contains("mockito-core") }?.absolutePath}"
+    )
     useJUnitPlatform()
+
+    testLogging {
+        events("PASSED", "FAILED", "SKIPPED") // show these test events
+        showStandardStreams = true            // show output from println and logs
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+
+    afterSuite(KotlinClosure2<TestDescriptor, TestResult, Unit>({ desc, result ->
+        // Only print summary at the top level suite
+        if (desc.parent == null) {
+            println("────────────────────────────────────────────")
+            println("Test result: ${result.resultType}")
+            println("Total: ${result.testCount}, Passed: ${result.successfulTestCount}, Failed: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}")
+            println("────────────────────────────────────────────")
+        }
+    }))
 }

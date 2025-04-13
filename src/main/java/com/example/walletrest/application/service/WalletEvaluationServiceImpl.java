@@ -43,6 +43,9 @@ public class WalletEvaluationServiceImpl implements WalletEvaluationService {
             BigDecimal originalValue = asset.value();
             BigDecimal originalUnitPrice = originalValue.divide(quantity, 3, RoundingMode.HALF_UP);
             TokenResponseDto tokenResponseDto = Objects.requireNonNull(coinCapClient.getTokensPrices().block()).get(symbol);
+            if (tokenResponseDto == null) {
+                throw new RuntimeException("Cannot find token for symbol: " + symbol);
+            }
             String slug = tokenResponseDto.name();
             log.info("Slug: {}, {}", slug, date);
             BigDecimal latestPrice = coinCapClient.getHistoricalPrice(slug, date).block();
